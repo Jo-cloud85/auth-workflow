@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Token from '../models/Token.js';
 import { StatusCodes } from 'http-status-codes';
 import CustomErrors from '../errors/index.js';
 import Utils from '../utils/index.js';
@@ -47,7 +48,8 @@ const register = async (req, res) => {
    
     // send verification token back only while testing in postman
     res.status(StatusCodes.CREATED).json({
-        msg: 'Success! Please check your email to verify account'
+        msg: 'Success! Please check your email to verify account',
+        verificationToken
     })
 };
 
@@ -95,7 +97,35 @@ const login = async (req, res) => {
     }
 
     const tokenUser = Utils.createTokenUser(user);
-    Utils.jwtValidation.attachCookiesToResponse({ res, user: tokenUser });
+
+    // create refresh token
+    let refreshToken = '';
+    // check for existing token
+    const existingToken = await Token.findOne({ user: user._id })
+
+    if (existingToken) {
+        const { isValid } = existingToken
+        if(!isValid) {
+            throw new CustomErrors.UnauthenticatedError('Invalid Credentials');
+        }
+        refreshToken = existingToken.refreshToken
+
+        Utils.jwtValidation.attachCookiesToResponse({ res, user: tokenUser, refreshToken });
+
+        res.status(StatusCodes.OK).json({ user: tokenUser });
+
+        return;
+    }
+
+
+    refreshToken = crypto.randomBytes(40).toString('hex')
+    const userAgent = req.headers['user-agent']
+    const ip = req.ip
+    const userToken = { refreshToken, ip, userAgent, user:user._id }
+
+    await Token.create(userToken);
+
+    Utils.jwtValidation.attachCookiesToResponse({ res, user: tokenUser, refreshToken });
 
     res.status(StatusCodes.OK).json({ user: tokenUser });
 };

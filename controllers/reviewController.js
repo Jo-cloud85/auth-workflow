@@ -82,7 +82,7 @@ const deleteReview = async (req, res) => {
         throw new CustomErrors.NotFoundError(`No review with id ${reviewId}`);
     }
 
-    checkPermissions(req.user, review.user);
+    Utils.checkPermissions(req.user, review.user);
     await review.remove();
     res.status(StatusCodes.OK).json({ msg: 'Success! Review removed' });
 };
