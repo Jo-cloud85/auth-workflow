@@ -27,16 +27,16 @@ const register = async (req, res) => {
     });
 
     const origin = 'http://localhost:3000';
-    const protoccol = req.protoccol;
-    console.log(`protoccol: ${protoccol}`);
-    const host = req.get('host')
-    console.log(`host: ${host}`);
 
-    const forwardedHost = req.get('x-forwarded-host');
-    const forwardedProtoccol = req.get('x-forwarded-proto');
+    // const protocol = req.protocol;
+    // console.log(`protocol: ${protocol}`);
+    // const host = req.get('host')
+    // console.log(`host: ${host}`);
 
-    console.log(`forwarded host: ${forwardedHost}`);
-    console.log(`forwarded protoccol: ${forwardedProtoccol}`);
+    // const forwardedHost = req.get('x-forwarded-host');
+    // const forwardedProtocol = req.get('x-forwarded-proto');
+    // console.log(`forwarded host: ${forwardedHost}`);
+    // console.log(`forwarded protocol: ${forwardedProtocol}`);
 
     await Utils.sendVerificationEmail({
         name: user.name,
@@ -64,8 +64,8 @@ const verifyEmail = async (req, res) => {
         throw new CustomErrors.UnauthenticatedError('Verification Failed');
     }
 
-    user.isVerified = true;
-    user.verified = Date.now()
+    (user.isVerified = true),
+    (user.verified = Date.now())
     user.verificationToken = ''
 
     await user.save()
@@ -104,7 +104,7 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
     res.cookie('token', 'logout', {
         httpOnly: true,
-        expires: new Date(Date.now() + 1000),
+        expires: new Date(Date.now()),
     });
     res.status(StatusCodes.OK).json({ msg: 'user logged out!' });
 };
