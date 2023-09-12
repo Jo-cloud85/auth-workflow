@@ -2,7 +2,7 @@ export default {
     host: 'smtp.ethereal.email',
     port: 587,
     auth: {
-        user: 'braden.kessler21@ethereal.email',
-        pass: 'qkBkTCZFFgT1heK2pR'
+        user: 'mariane17@ethereal.email',
+        pass: 'KvdmVQ3stGwq9pZnZH'
     }
 }
