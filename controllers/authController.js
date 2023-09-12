@@ -58,11 +58,11 @@ const verifyEmail = async (req, res) => {
     const { verificationToken, email } = req.body;
     const user = await User.findOne({ email });
     
-    if(!user) {
+    if (!user) {
         throw new CustomErrors.UnauthenticatedError('Verification Failed');
     }
 
-    if(user.verificationToken !== verificationToken) {
+    if (user.verificationToken !== verificationToken) {
         throw new CustomErrors.UnauthenticatedError('Verification Failed');
     }
 
@@ -172,7 +172,7 @@ const forgotPassword = async (req, res) => {
         const tenMinutes = 1000 * 60 * 10;
         const passwordTokenExpirationDate = new Date(Date.now() + tenMinutes)
         
-        user.passwordToken = passwordToken
+        user.passwordToken = Utils.createHash(passwordToken)
         user.passwordTokenExpirationDate = passwordTokenExpirationDate
         await user.save()
     }
@@ -183,14 +183,15 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     const { token, email, password } = req.body;
+
     if(!token || !email || !password) {
         throw new CustomErrors.BadRequestError("Please provide all values")
     }
+
     const user = await User.findOne({ email })
     if (user) {
         const currentDate = new Date()
-
-        if (user.passwordToken === token && user.passwordTokenExpirationDate > currentDate) {
+        if (user.passwordToken === Utils.createHash(token) && user.passwordTokenExpirationDate > currentDate) {
             user.password = password
             user.passwordToken = null
             user.passwordTokenExpirationDate = null
