@@ -29,17 +29,21 @@ const register = async (req, res) => {
 		verificationToken,
 	});
 
+	// once in production, change this URL to the one that is hosted e.g. on render
 	const origin = "http://localhost:3000";
 
+	// this is just to show the things you can get from the request object
+	// const tempOrigin = req.get('origin');
+	// console.log(`origin: ${tempOrigin}`); // http://localhost:5000 - where the req is coming from
 	// const protocol = req.protocol;
-	// console.log(`protocol: ${protocol}`);
+	// console.log(`protocol: ${protocol}`); // http
 	// const host = req.get('host')
-	// console.log(`host: ${host}`);
+	// console.log(`host: ${host}`); // localhost:5000
 
 	// const forwardedHost = req.get('x-forwarded-host');
 	// const forwardedProtocol = req.get('x-forwarded-proto');
-	// console.log(`forwarded host: ${forwardedHost}`);
-	// console.log(`forwarded protocol: ${forwardedProtocol}`);
+	// console.log(`forwarded host: ${forwardedHost}`); // localhost:3000
+	// console.log(`forwarded protocol: ${forwardedProtocol}`); // http
 
 	await Utils.sendVerificationEmail({
 		name: user.name,
@@ -128,11 +132,13 @@ const login = async (req, res) => {
 		return;
 	}
 
-	// essentially, crypto.randomBytes creates a buffer
 	refreshToken = crypto.randomBytes(40).toString("hex");
-
+	// you can also use req.get to get user-agent like how you get the host, protocol etc
+	// you need to extract user-agent and ip from req because in TokenSchema, they are one of the properties
+	// so you need then in order to create a new token using Token.create()
 	const userAgent = req.headers["user-agent"];
 	const ip = req.ip;
+	// you dont have to put in isValid as there is a default value in TokenSchema
 	const userToken = { refreshToken, ip, userAgent, user: user._id };
 
 	await Token.create(userToken);
