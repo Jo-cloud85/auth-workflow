@@ -111,11 +111,13 @@ const login = async (req, res) => {
 
 	// create refresh token
 	let refreshToken = "";
-	// check for existing token
+
+	// check for existing token is necessary because you don't want a situation when a new token
+	// is generated whenever the same user logs in. This existing token is like an id for tokens.
 	const existingToken = await Token.findOne({ user: user._id });
 
 	if (existingToken) {
-		const { isValid } = existingToken;
+		const { isValid } = existingToken; // rmb there's a isValid property (default: true) on TokenSchema
 		if (!isValid) {
 			throw new CustomErrors.UnauthenticatedError("Invalid Credentials");
 		}
@@ -133,9 +135,9 @@ const login = async (req, res) => {
 	}
 
 	refreshToken = crypto.randomBytes(40).toString("hex");
-	// you can also use req.get to get user-agent like how you get the host, protocol etc
-	// you need to extract user-agent and ip from req because in TokenSchema, they are one of the properties
-	// so you need then in order to create a new token using Token.create()
+	// you can also use req.get to get user-agent like how you get the host, protocol etc.
+	// you need to extract user-agent and ip from req because in TokenSchema, they are one of the
+	// properties so you need then in order to create a new token using Token.create()
 	const userAgent = req.headers["user-agent"];
 	const ip = req.ip;
 	// you dont have to put in isValid as there is a default value in TokenSchema
@@ -152,6 +154,7 @@ const login = async (req, res) => {
 	res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
+// ensure both tokens are removed
 const logout = async (req, res) => {
 	await Token.findOneAndDelete({ user: req.user.userId });
 
