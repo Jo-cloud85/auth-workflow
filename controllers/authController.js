@@ -154,7 +154,7 @@ const login = async (req, res) => {
 	res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
-// ensure both tokens are removed
+// ensure both tokens are removed but first we need to attach user
 const logout = async (req, res) => {
 	await Token.findOneAndDelete({ user: req.user.userId });
 
@@ -168,6 +168,8 @@ const logout = async (req, res) => {
 		expires: new Date(Date.now()),
 	});
 
+	// again, the msg is more for postman as an indication that the functionality is successful
+	// the frontend does not need this msg
 	res.status(StatusCodes.OK).json({ msg: "user logged out!" });
 };
 
@@ -178,12 +180,14 @@ const forgotPassword = async (req, res) => {
 	}
 
 	const user = await User.findOne({ email });
+
 	if (user) {
 		const passwordToken = crypto.randomBytes(70).toString("hex");
 
-		// send email
+		// origin is pointing to the frontend
 		const origin = "http://localhost:3000";
 
+		// send email for reset password link
 		await Utils.sendResetPasswordEmail({
 			name: user.name,
 			email: user.email,
@@ -194,11 +198,14 @@ const forgotPassword = async (req, res) => {
 		const tenMinutes = 1000 * 60 * 10;
 		const passwordTokenExpirationDate = new Date(Date.now() + tenMinutes);
 
+		// user.passwordToken and user.passwordTokenExpirationDate come from UserSchema
 		user.passwordToken = Utils.createHash(passwordToken);
 		user.passwordTokenExpirationDate = passwordTokenExpirationDate;
 		await user.save();
 	}
 
+	// whether or not the user exist, you still send this success response to prevent attacker
+	// from trying out some random email and realised that the user does not exist
 	res.status(StatusCodes.OK).json({
 		msg: "Please check you email for reset password link",
 	});
@@ -213,6 +220,7 @@ const resetPassword = async (req, res) => {
 
 	const user = await User.findOne({ email });
 	if (user) {
+		// check for today's date first because the password token has expiry
 		const currentDate = new Date();
 		if (
 			user.passwordToken === Utils.createHash(token) &&

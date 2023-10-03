@@ -10,6 +10,8 @@ router.post("/register", controllerAuth.register);
 
 router.post("/login", controllerAuth.login);
 
+// in the e-commerce api proj, it is a public 'get' route but here we change to 'delete'
+// because we want to delete the tokens
 router.delete(
 	"/logout",
 	authMiddleware.authenticateUser,

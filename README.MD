@@ -70,13 +70,11 @@
 
 #### Forgot/Reset Password Functionality
 
--   User Model
--   passwordToken {type:String}
--   passwordTokenExpirationDate {type:Date}
--   authController
--   forgotPassword and resetPassword
--   authRoutes
--   post '/forgot-password' '/reset-password'
+-   User Model:
+-       - passwordToken {type:String}
+-       - passwordTokenExpirationDate {type:Date}
+-   authController -> forgotPassword and resetPassword
+-   authRoutes -> post '/forgot-password' '/reset-password'
 
 #### Forgot Password Controller
 
